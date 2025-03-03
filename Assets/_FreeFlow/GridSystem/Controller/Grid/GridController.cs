@@ -1,71 +1,28 @@
 
+using System.Linq;
 using UnityEngine;
 
-
-public class GridController : MonoBehaviour
+public class GridController : GridBase
 {
-    [Header("Grid Settings")]
-    [SerializeField] private Cell _cellPrefab; 
-    [SerializeField] private int _rows = 5;
-    [SerializeField] private int _columns = 5;
-    [SerializeField] private float _cellSpacing = 1.1f; 
-
-    private Cell[,] _gridCells; 
-//hww
-    private void Start()
+    public void Init(int gridSize,LevelData levelData)
     {
-        GenerateGrid();
-    }
-
-    private void GenerateGrid()
-    {
-        _gridCells = new Cell[_rows, _columns];
-
-        for (int row = 0; row < _rows; row++)
+        SetUp(gridSize);
+        var paths= levelData.Paths;
+        foreach (var data in paths)
         {
-            for (int col = 0; col < _columns; col++)
-            {
-                Vector3 position=GetCellPosition(row, col) - GetGridOffset();
-                Cell cell = Instantiate(_cellPrefab, position, Quaternion.identity, transform);
-
-                cell.InitializeCellInfo(row, col, row * _columns + col); 
-                cell.InitializeCellData(); 
-
-                _gridCells[row, col] = cell;
-            }
+            GridTile startTile=GetTileByIndex(data.Points.First().x, data.Points.First().y);
+            GridTile endTile = GetTileByIndex(data.Points.Last().x, data.Points.Last().y);
+           SetTilesData(startTile,endTile,data.Color);
+          
         }
     }
-    private Vector3 GetGridOffset()
-    {
-        float gridWidth = (_columns-1) * _cellSpacing;
-        float gridHeight = (_rows-1) * _cellSpacing;
-        
-       return new Vector3(gridWidth / 2f, gridHeight / 2f, 0);
-    }
-   
-    private Vector3 GetCellPosition(int row, int column)
-    {
-        return new Vector3(column * _cellSpacing, row * _cellSpacing, 0);
-    }
 
-    public Cell GetCell(int row, int col)
+    private void SetTilesData(GridTile startTile,GridTile endTile,int color)
     {
-        if (row >= 0 && row < _rows && col >= 0 && col < _columns)
-            return _gridCells[row, col];
-
-        return null; 
+        startTile.IsNode=true;
+        endTile.IsNode=true;
+        startTile.Color = color;
+        endTile.Color = color;
     }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.black;
-        for (int row = 0; row < _rows; row++)
-        {
-            for (int col = 0; col < _columns; col++)
-            {
-                Vector3 position=GetCellPosition(row, col) - GetGridOffset();
-                Gizmos.DrawWireCube(position, Vector3.one * 1f);
-            }
-        }
-    }
+    
 }
