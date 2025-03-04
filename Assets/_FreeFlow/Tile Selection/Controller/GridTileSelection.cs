@@ -10,12 +10,12 @@ public class GridTileSelection : MonoBehaviour
     private bool _isDragging = false;
     private Vector3 _lastMousePosition;
 
-    private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
-    private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
+    [SerializeField] private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+    [SerializeField] private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
 
     private ColorType _currentColor;
     private List<GridTile> _currentSelection;
-    private HashSet<GridTile> _currentActiveTiles;
+   [SerializeField] private HashSet<GridTile> _currentActiveTiles;
 
     [SerializeField] private ConnectionManager connectionManager;
 
@@ -61,18 +61,16 @@ public class GridTileSelection : MonoBehaviour
             {
                 _currentColor = gridTile.Color;
 
-
+                // **RESET PATH IF IT EXISTS**
                 if (_paths.ContainsKey(_currentColor))
                 {
-                    _currentSelection = new List<GridTile>(_paths[_currentColor]);
-                    _currentActiveTiles = new HashSet<GridTile>(_activeTiles[_currentColor]);
-    
-                    connectionManager.ContinuePath(_currentColor, _currentSelection);
+                    ResetPath(_currentColor);
+                    connectionManager.ClearConnections(_currentColor);
+                    // Ye pura path reset karega
                 }
 
+                // **NEW PATH INITIALIZATION**
                 _isDragging = true;
-
-                // new path for this color
                 _currentSelection = new List<GridTile>();
                 _currentActiveTiles = new HashSet<GridTile>();
 
