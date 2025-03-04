@@ -101,43 +101,47 @@ public class GridTileSelection : MonoBehaviour
     private void HandleTileSelection(GridTile gridTile)
     {
        if (_currentSelection == null) return;
-       GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
-       if (Mathf.Abs(lastTile.Coordinate.x - gridTile.Coordinate.x) + Mathf.Abs(lastTile.Coordinate.y - gridTile.Coordinate.y) != 1)
-       {
-           return; 
-       }
-    //  **Backtracking Check**
+    
+    GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
+    if (Mathf.Abs(lastTile.Coordinate.x - gridTile.Coordinate.x) + Mathf.Abs(lastTile.Coordinate.y - gridTile.Coordinate.y) != 1)
+    {
+        return; 
+    }
+
+    // **Backtracking Check**
     if (_currentSelection.Count > 1 && _currentSelection[_currentSelection.Count - 2] == gridTile)
     {
         Debug.Log("Backtracking... Removing Last Tile");
 
         connectionManager.RemoveLastConnection(_currentColor);
-        
-        if(!lastTile.IsNode)lastTile.Color = ColorType.None;  // Remove color
+
+        if (!lastTile.IsNode) lastTile.Color = ColorType.None; // Remove color
         _currentActiveTiles.Remove(lastTile);
         _currentSelection.RemoveAt(_currentSelection.Count - 1);
 
         return;
     }
 
-    //  **Prevent Selecting the Same Tile Again**
-    if (_currentSelection.Contains(gridTile)) return;
-
-    //  **Block if Wrong Color**
-    if (gridTile.IsNode && gridTile.Color != _currentColor) return;
-
-    //  **Handle Overlapping Paths**
+    // **Check if this tile is already part of another path**
     foreach (var kvp in _activeTiles)
     {
         if (kvp.Key != _currentColor && kvp.Value.Contains(gridTile))
         {
-            Debug.Log($"Overlapping Detected: Resetting Path for {kvp.Key}");
-            ResetPath(kvp.Key);
+            Debug.Log($"Intersection Detected! Clearing old path for {kvp.Key}");
+
+            ResetPath(kvp.Key);  // Remove previous path
+            connectionManager.ClearConnections(kvp.Key); // Remove all connections
             break;
         }
     }
 
-    //  **Initialize Path if First Tile**
+    // **Prevent Selecting the Same Tile Again**
+    if (_currentSelection.Contains(gridTile)) return;
+
+    // **Block if Wrong Color**
+    if (gridTile.IsNode && gridTile.Color != _currentColor) return;
+
+    // **Initialize Path if First Tile**
     if (_currentSelection.Count == 0)
     {
         _currentColor = gridTile.Color;
@@ -148,19 +152,16 @@ public class GridTileSelection : MonoBehaviour
         _activeTiles[_currentColor] = _currentActiveTiles;
     }
 
-    //  **Add Tile to Path**
+    // **Add Tile to Path**
     _currentSelection.Add(gridTile);
     _currentActiveTiles.Add(gridTile);
     gridTile.Color = _currentColor;
 
-    //  **Create Connection**
+    // **Create Connection**
     if (_currentSelection.Count > 1)
     {
         connectionManager.CreateConnection(_currentSelection[_currentSelection.Count - 2], gridTile);
     }
-
-    //  **Handle End Node**
-    
 }
 
 //  **Reset Function for Overlapping Paths**
