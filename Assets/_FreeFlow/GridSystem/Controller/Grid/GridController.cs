@@ -17,7 +17,7 @@ public class GridController : GridBase
         }
     }
 
-    private void SetTilesData(GridTile startTile,GridTile endTile,int color)
+    private void SetTilesData(GridTile startTile,GridTile endTile,ColorType color)
     {
         startTile.IsNode=true;
         endTile.IsNode=true;

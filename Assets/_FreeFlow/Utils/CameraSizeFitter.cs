@@ -25,7 +25,7 @@ public class CameraSizeFitter : MonoBehaviour
         }
         else
         {
-            var aspectRatio = Screen.height / Screen.width;
+            var aspectRatio = (float)Screen.height / Screen.width;
             Debug.Log(aspectRatio);
             _camera.orthographicSize = (aspectRatio * _worldGridSize ) / 2f;
             

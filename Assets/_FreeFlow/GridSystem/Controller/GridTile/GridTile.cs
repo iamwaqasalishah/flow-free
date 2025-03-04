@@ -8,11 +8,13 @@ using UnityEngine;
 public class GridTile : MonoBehaviour,IGridTile
 {
     [SerializeField] private SpriteRenderer _pathEnd;
+    [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private Collider2D _inputCollider;
+    
     
     private float _size;
     private bool _isNode;
-    private int _color;
+    private ColorType _color;
     
     public float Size
     {
@@ -23,9 +25,7 @@ public class GridTile : MonoBehaviour,IGridTile
             transform.localScale = Vector3.one * value;
         }
     }
-
-    
-    public int Color
+    public ColorType Color
     {
         get => _color;
         set
@@ -60,12 +60,12 @@ public class GridTile : MonoBehaviour,IGridTile
 
     public void SelectTile()
     {
-        
+        _renderer.color = ColorGroupSO.Default.GetColor(_color);
     }
 
     public void DeselectTile()
     {
-        
+        _renderer.color = ColorGroupSO.Default.GetColor(ColorType.None);
     }
 }
 

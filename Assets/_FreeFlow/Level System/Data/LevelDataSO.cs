@@ -31,5 +31,5 @@ public class LevelData
 public class PathData
 {
     public List<Vector2Int> Points;
-    public int Color;
+    public ColorType Color;
 }

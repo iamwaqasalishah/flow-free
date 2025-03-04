@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GridSize: 5
   TileSpacing: 0.05
+  GridTilePrefab: {fileID: -2938766817744431186, guid: cb4eb3c2182058a48bd3fa7e7f9bb579, type: 3}

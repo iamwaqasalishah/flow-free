@@ -50,7 +50,7 @@ public class GridBase : MonoBehaviour
         }
     }
 
-    protected GridTile GetTileByIndex(int x, int y)
+    public GridTile GetTileByIndex(int x, int y)
     {
         _tiles.TryGetValue(new Vector2Int(x, y), out GridTile tile);
         return tile; 
