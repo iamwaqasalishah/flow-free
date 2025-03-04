@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -10,8 +11,8 @@ public class GridTileSelection : MonoBehaviour
     private bool _isDragging = false;
     private Vector3 _lastMousePosition;
 
-    [SerializeField] private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
-    [SerializeField] private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
+    [ShowInInspector] private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+    [ShowInInspector] private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
 
     private ColorType _currentColor;
     private List<GridTile> _currentSelection;
@@ -100,15 +101,11 @@ public class GridTileSelection : MonoBehaviour
 
     private void HandleTileSelection(GridTile gridTile)
     {
-       if (_currentSelection == null) return;
-    
-    GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
-    if (Mathf.Abs(lastTile.Coordinate.x - gridTile.Coordinate.x) + Mathf.Abs(lastTile.Coordinate.y - gridTile.Coordinate.y) != 1)
-    {
-        return; 
-    }
+      if (_currentSelection == null) return;
 
-    // **Backtracking Check**
+    GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
+
+    // **Backtracking Check** (Allow going back)
     if (_currentSelection.Count > 1 && _currentSelection[_currentSelection.Count - 2] == gridTile)
     {
         Debug.Log("Backtracking... Removing Last Tile");
@@ -120,6 +117,19 @@ public class GridTileSelection : MonoBehaviour
         _currentSelection.RemoveAt(_currentSelection.Count - 1);
 
         return;
+    }
+
+    // **Final Node Restriction (Block new selections but allow backtracking)**
+    if (lastTile.IsNode && _currentSelection.Count > 1)
+    {
+        Debug.Log("Reached Final Node! No further selection allowed.");
+        return; // Stop forward selection but allow backtracking
+    }
+
+    // **Ensure Adjacent Selection**
+    if (Mathf.Abs(lastTile.Coordinate.x - gridTile.Coordinate.x) + Mathf.Abs(lastTile.Coordinate.y - gridTile.Coordinate.y) != 1)
+    {
+        return; 
     }
 
     // **Check if this tile is already part of another path**
@@ -140,17 +150,6 @@ public class GridTileSelection : MonoBehaviour
 
     // **Block if Wrong Color**
     if (gridTile.IsNode && gridTile.Color != _currentColor) return;
-
-    // **Initialize Path if First Tile**
-    if (_currentSelection.Count == 0)
-    {
-        _currentColor = gridTile.Color;
-        _currentSelection = new List<GridTile>();
-        _currentActiveTiles = new HashSet<GridTile>();
-
-        _paths[_currentColor] = _currentSelection;
-        _activeTiles[_currentColor] = _currentActiveTiles;
-    }
 
     // **Add Tile to Path**
     _currentSelection.Add(gridTile);

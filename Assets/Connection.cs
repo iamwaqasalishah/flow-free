@@ -5,9 +5,14 @@ using UnityEngine;
 public class Connection : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    public GridTile FromTile { get; private set; }
+    public GridTile ToTile { get; private set; }
 
     public void SetConnection(GridTile fromTile, GridTile toTile)
     {
+        FromTile = fromTile;
+        ToTile = toTile;
+
         _spriteRenderer.color = ColorGroupSO.Default.GetColor(fromTile.Color);
 
         transform.position = (fromTile.transform.position + toTile.transform.position) / 2;
