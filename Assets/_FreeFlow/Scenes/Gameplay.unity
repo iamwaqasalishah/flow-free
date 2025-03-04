@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gridController: {fileID: 1371039203}
+  totalLevels: 5
 --- !u!1 &452907741
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,7 +273,7 @@ GameObject:
   - component: {fileID: 604630112}
   - component: {fileID: 604630113}
   m_Layer: 0
-  m_Name: UserInput
+  m_Name: TileSelection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

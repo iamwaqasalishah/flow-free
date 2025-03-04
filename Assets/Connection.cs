@@ -5,6 +5,8 @@ using UnityEngine;
 public class Connection : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private float _scaleY;
+    [SerializeField] private float _scaleXOffset;
     public GridTile FromTile { get; private set; }
     public GridTile ToTile { get; private set; }
 
@@ -18,6 +20,6 @@ public class Connection : MonoBehaviour
         transform.position = (fromTile.transform.position + toTile.transform.position) / 2;
         transform.right = (toTile.transform.position - fromTile.transform.position).normalized;
         transform.localScale =
-            new Vector3(Vector3.Distance(fromTile.transform.position, toTile.transform.position), 0.1f, 1);
+            new Vector3(Vector3.Distance(fromTile.transform.position, toTile.transform.position)+_scaleXOffset, _scaleY, 1);
     }
 }

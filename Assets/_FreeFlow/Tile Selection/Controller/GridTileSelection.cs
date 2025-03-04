@@ -185,14 +185,23 @@ private void ResetPath(ColorType color)
         if (_currentSelection != null && _currentSelection.Count > 1 &&
             _currentSelection[_currentSelection.Count - 1].IsNode)
         {
-            // Save the path for this color
+            // Save the valid path
             _paths[_currentColor] = new List<GridTile>(_currentSelection);
             _activeTiles[_currentColor] = new HashSet<GridTile>(_currentActiveTiles);
+            foreach (var tile in _currentSelection)
+            {
+                tile.SelectTile();  // Call Highlight Function
+            }
             _currentSelection = null; // Lock Path
+            
         }
         else
         {
-            ResetPath(_currentColor); // Invalid Path
+            // If path is incomplete, reset it instantly
+            Debug.Log("Incomplete path, resetting...");
+            ResetPath(_currentColor);
+            connectionManager.ClearConnections(_currentColor); // Remove all drawn connections
+            _currentSelection = null;
         }
     }
 
