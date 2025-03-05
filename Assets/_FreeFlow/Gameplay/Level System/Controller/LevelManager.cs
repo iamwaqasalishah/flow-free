@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
@@ -29,7 +30,8 @@ public class LevelManager : MonoBehaviour
     private void LoadLevel(int levelToLoad)
     {
         int levelIndex = ((levelToLoad - 1) % _totalLevels) + 1;
-        LevelData level = LevelDataSO.Default.GetLevel(levelIndex);
+       
+        LevelData level = LevelDataSO.Default.GetLevel(levelIndex-1);
         if (level != null)
         {
             EventManager.DoFireOnInitializeGrid(level.GridSize, level);

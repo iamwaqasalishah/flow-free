@@ -50,7 +50,18 @@ public class ConnectionController : MonoBehaviour
             _connections[color].Add(connection);
         }
     }
-
+    public void ClearAllConnections()
+    {
+        foreach (var connection in _connections.Values)
+        {
+            foreach (var line in connection)
+            {
+                Destroy(line.gameObject); // Destroy all line renderers or connection objects
+            }
+        }
+    
+        _connections.Clear(); // Clear the dictionary
+    }
     public void RemoveLastConnection(ColorType color)
     {
         if (_connections.ContainsKey(color) && _connections[color].Count > 0)

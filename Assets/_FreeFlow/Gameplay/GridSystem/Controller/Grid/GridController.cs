@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GridController : GridBase
 {
+    
     private void OnEnable()
     {
         EventManager.OnInitializeGrid += InitializeGrid;

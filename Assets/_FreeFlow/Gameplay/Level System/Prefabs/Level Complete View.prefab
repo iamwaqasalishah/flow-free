@@ -599,7 +599,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 0.42745098}
+  m_Color: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 0.8862745}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -813,7 +813,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ff4c664170a407787ce84a92aadfd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Panel: {fileID: 3158048637130259787}
+  Panel: {fileID: 5013239860067405462}
   NextLevelButton: {fileID: 3449268297180703611}
   RestartLevelButton: {fileID: 5275355005588650565}
   LevelText: {fileID: 4253234809951801380}

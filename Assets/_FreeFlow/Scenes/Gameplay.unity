@@ -694,11 +694,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1320991954}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1554939249 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5013239860067405462, guid: 8bda8ff3a2069480880db6023683ef77, type: 3}
-  m_PrefabInstance: {fileID: 9076124198502673752}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1557514029 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1235501479515648925, guid: 8bda8ff3a2069480880db6023683ef77, type: 3}
@@ -1189,14 +1184,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2405856176974088100, guid: 8bda8ff3a2069480880db6023683ef77, type: 3}
-      propertyPath: m_Color.a
-      value: 0.8862745
-      objectReference: {fileID: 0}
-    - target: {fileID: 5180571782239516396, guid: 8bda8ff3a2069480880db6023683ef77, type: 3}
-      propertyPath: Panel
-      value: 
-      objectReference: {fileID: 1554939249}
     - target: {fileID: 7386144840313753530, guid: 8bda8ff3a2069480880db6023683ef77, type: 3}
       propertyPath: m_Name
       value: Level Complete View

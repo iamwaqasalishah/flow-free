@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PathController : MonoBehaviour
 {
-    private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+   private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
     private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
 
     private List<GridTile> _currentSelection;
@@ -14,14 +14,19 @@ public class PathController : MonoBehaviour
     private int _totalNumberOfPaths;
 
     private ConnectionController _connectionController;
+    private Stack<ColorType> _undoStack = new Stack<ColorType>(); // Stack for undoing paths
 
     private void OnEnable()
     {
         EventManager.OnSetPathsCount += OnSetPathsCount;
+        EventManager.OnUndo += UndoLastPath;
+        EventManager.OnReset += ResetAllPaths;
     }
 
     private void OnDisable()
     {
+        EventManager.OnUndo -= UndoLastPath;
+        EventManager.OnReset -= ResetAllPaths;
         EventManager.OnSetPathsCount -= OnSetPathsCount;
     }
 
@@ -32,8 +37,9 @@ public class PathController : MonoBehaviour
 
     private void OnSetPathsCount(int count)
     {
-        _totalNumberOfPaths=count;
+        _totalNumberOfPaths = count;
     }
+
     public void StartNewPath(GridTile gridTile)
     {
         _currentColor = gridTile.Color;
@@ -63,7 +69,6 @@ public class PathController : MonoBehaviour
         }
 
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
-
         if (!IsAdjacent(lastTile, gridTile)) return;
 
         foreach (var kvp in _activeTiles)
@@ -113,13 +118,10 @@ public class PathController : MonoBehaviour
             _paths[_currentColor] = new List<GridTile>(_currentSelection);
             _activeTiles[_currentColor] = new HashSet<GridTile>(_currentActiveTiles);
 
-            foreach (var tile in _currentSelection)
-            {
-                //tile.SelectTile();
-            }
+            _undoStack.Push(_currentColor); // Store path for undo
 
             _currentSelection = null;
-           CheckLevelComplete();
+            CheckLevelComplete();
         }
         else
         {
@@ -128,11 +130,12 @@ public class PathController : MonoBehaviour
             _currentSelection = null;
         }
     }
-    
+
     private bool IsAllPathsCompleted()
     {
-        return _paths.Count == _totalNumberOfPaths; 
+        return _paths.Count == _totalNumberOfPaths;
     }
+
     private void CheckLevelComplete()
     {
         if (IsAllPathsCompleted())
@@ -141,7 +144,7 @@ public class PathController : MonoBehaviour
             EventManager.DoFireOnEnableLevelCompletePanel();
         }
     }
-    
+
     private void ResetPath(ColorType color)
     {
         if (!_paths.ContainsKey(color)) return;
@@ -154,5 +157,36 @@ public class PathController : MonoBehaviour
         _paths.Remove(color);
         _activeTiles.Remove(color);
         _connectionController.ClearConnections(color);
+    }
+
+    /// <summary>
+    /// Clears all paths and connections (Reset Button)
+    /// </summary>
+    public void ResetAllPaths()
+    {
+        foreach (var color in _paths.Keys)
+        {
+            foreach (var tile in _paths[color])
+            {
+                if (!tile.IsNode) tile.Color = ColorType.None;
+            }
+        }
+
+        _paths.Clear();
+        _activeTiles.Clear();
+        _undoStack.Clear();
+        _connectionController.ClearAllConnections();
+    }
+
+    /// <summary>
+    /// Removes only the last placed path and its connections (Undo Button)
+    /// </summary>
+    public void UndoLastPath()
+    {
+        if (_undoStack.Count == 0) return;
+
+        ColorType lastColor = _undoStack.Pop();
+        ResetPath(lastColor);
+        _connectionController.ClearConnections(lastColor);
     }
 }
