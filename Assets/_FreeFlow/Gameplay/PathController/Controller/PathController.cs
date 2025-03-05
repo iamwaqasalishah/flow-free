@@ -7,14 +7,13 @@ public class PathController : MonoBehaviour
 {
     private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
     private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
-    private Dictionary<ColorType, PathLineRenderer> _lineRenderers = new Dictionary<ColorType, PathLineRenderer>();
-
+    
     private List<GridTile> _currentSelection;
     private HashSet<GridTile> _currentActiveTiles;
     private ColorType _currentColor;
     private int _totalNumberOfPaths;
 
-    private ConnectionController _connectionController;
+    [SerializeField] private PathVisualizer _pathVisualizer;
     private Stack<ColorType> _undoStack = new Stack<ColorType>(); // Stack for undoing paths
 
     private void OnEnable()
@@ -33,7 +32,7 @@ public class PathController : MonoBehaviour
 
     private void Awake()
     {
-        _connectionController = GetComponent<ConnectionController>();
+        
     }
 
     private void OnSetPathsCount(int count)
@@ -48,7 +47,6 @@ public class PathController : MonoBehaviour
         if (_paths.ContainsKey(_currentColor))
         {
             ResetPath(_currentColor);
-            _connectionController.ClearConnections(_currentColor);
         }
 
         _currentSelection = new List<GridTile> { gridTile };
@@ -56,25 +54,10 @@ public class PathController : MonoBehaviour
 
         gridTile.Color = _currentColor;
 
-        // 🟢 Create a new PathLineRenderer for the color
-        CreateLineRenderer(gridTile);
+        _pathVisualizer.CreateLineRenderer(_currentColor, gridTile.transform.position);
     }
 
-    private void CreateLineRenderer(GridTile startTile)
-    {
-        if (_lineRenderers.ContainsKey(_currentColor))
-        {
-            Destroy(_lineRenderers[_currentColor].gameObject);
-            _lineRenderers.Remove(_currentColor);
-        }
-
-        GameObject lineObj = new GameObject("PathLine_" + _currentColor);
-        PathLineRenderer lineRenderer = lineObj.AddComponent<PathLineRenderer>();
-        lineRenderer.SetColor(_currentColor);
-        lineRenderer.AddPoint(startTile.transform.position);
-
-        _lineRenderers[_currentColor] = lineRenderer;
-    }
+    
 
     public void HandleTileSelection(GridTile gridTile)
     {
@@ -96,7 +79,6 @@ public class PathController : MonoBehaviour
             if (kvp.Key != _currentColor && kvp.Value.Contains(gridTile))
             {
                 ResetPath(kvp.Key);
-                _connectionController.ClearConnections(kvp.Key);
                 break;
             }
         }
@@ -107,14 +89,8 @@ public class PathController : MonoBehaviour
         _currentSelection.Add(gridTile);
         _currentActiveTiles.Add(gridTile);
         gridTile.Color = _currentColor;
-
-        if (_currentSelection.Count > 1)
-        {
-            _connectionController.CreateConnection(_currentSelection[_currentSelection.Count - 2], gridTile);
-        }
-
-        // 🟢 Update LineRenderer
-        _lineRenderers[_currentColor]?.AddPoint(gridTile.transform.position);
+        
+        _pathVisualizer.AddPoint(_currentColor, gridTile.transform.position);
     }
 
     private bool IsAdjacent(GridTile a, GridTile b)
@@ -125,16 +101,12 @@ public class PathController : MonoBehaviour
     private void Backtrack()
     {
         GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
-
-        _connectionController.RemoveLastConnection(_currentColor);
-
         if (!lastTile.IsNode) lastTile.Color = ColorType.None;
 
         _currentActiveTiles.Remove(lastTile);
         _currentSelection.RemoveAt(_currentSelection.Count - 1);
 
-        // 🟢 Remove last point from LineRenderer
-        _lineRenderers[_currentColor]?.RemoveLastPoint();
+        _pathVisualizer.RemoveLastPoint(_currentColor);
     }
 
     public void ValidatePath()
@@ -145,17 +117,15 @@ public class PathController : MonoBehaviour
             _paths[_currentColor] = new List<GridTile>(_currentSelection);
             _activeTiles[_currentColor] = new HashSet<GridTile>(_currentActiveTiles);
 
-            _undoStack.Push(_currentColor); // Store path for undo
+            _undoStack.Push(_currentColor); 
 
             _currentSelection = null;
             CheckLevelComplete();
         }
         else
         {
-            if (_lineRenderers.ContainsKey(_currentColor))
-                _lineRenderers[_currentColor]?.ClearLine();
+            _pathVisualizer.ClearLine(_currentColor);
             ResetPath(_currentColor);
-            _connectionController.ClearConnections(_currentColor);
             _currentSelection = null;
         }
     }
@@ -185,19 +155,9 @@ public class PathController : MonoBehaviour
 
         _paths.Remove(color);
         _activeTiles.Remove(color);
-        _connectionController.ClearConnections(color);
-
-        // 🟢 Remove LineRenderer for this path
-        if (_lineRenderers.ContainsKey(color))
-        {
-            Destroy(_lineRenderers[color].gameObject);
-            _lineRenderers.Remove(color);
-        }
+        _pathVisualizer.RemoveLineRenderer(color);
     }
 
-    /// <summary>
-    /// Clears all paths and connections (Reset Button)
-    /// </summary>
     public void ResetAllPaths()
     {
         foreach (var color in _paths.Keys)
@@ -211,26 +171,15 @@ public class PathController : MonoBehaviour
         _paths.Clear();
         _activeTiles.Clear();
         _undoStack.Clear();
-        _connectionController.ClearAllConnections();
-
-        // 🟢 Clear all LineRenderers
-        foreach (var lineRenderer in _lineRenderers.Values)
-        {
-            Destroy(lineRenderer.gameObject);
-        }
-
-        _lineRenderers.Clear();
+        _pathVisualizer.ClearAllLines();
     }
 
-    /// <summary>
-    /// Removes only the last placed path and its connections (Undo Button)
-    /// </summary>
+  
     public void UndoLastPath()
     {
         if (_undoStack.Count == 0) return;
 
         ColorType lastColor = _undoStack.Pop();
         ResetPath(lastColor);
-        _connectionController.ClearConnections(lastColor);
     }
 }

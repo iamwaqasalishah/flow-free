@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3010910136137458228}
-  - component: {fileID: 4615040249232582155}
   - component: {fileID: 6463765292173813833}
+  - component: {fileID: 5239341130770460171}
   m_Layer: 0
   m_Name: Pathcontroller
   m_TagString: Untagged
@@ -33,19 +33,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4615040249232582155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4580309323087113078}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee7c69b6d15b34d5caa7e55e77c852d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  connectionPrefab: {fileID: 4234936407311427472, guid: ddad73bea04d94ac4b695ab0555e9684, type: 3}
 --- !u!114 &6463765292173813833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56,5 +43,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee6c8c5d3f4f64d77aaf89e43362abfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pathVisualizer: {fileID: 5239341130770460171}
+--- !u!114 &5239341130770460171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4580309323087113078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ae2c7d51b484ab99d7e1a1fa19a973, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
