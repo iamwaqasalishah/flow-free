@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using RDG;
 using UnityEngine;
 
 public class PathVisualizer : MonoBehaviour
@@ -18,7 +19,7 @@ public class PathVisualizer : MonoBehaviour
         PathLineRenderer lineRenderer = lineObj.AddComponent<PathLineRenderer>();
         lineRenderer.SetColor(color);
         lineRenderer.AddPoint(startPosition);
-
+        Vibration.Vibrate(10);
         _lineRenderers[color] = lineRenderer;
     }
 
@@ -26,6 +27,7 @@ public class PathVisualizer : MonoBehaviour
     {
         if (_lineRenderers.ContainsKey(color))
         {
+            Vibration.Vibrate(10);
             _lineRenderers[color].AddPoint(position);
         }
     }
@@ -61,6 +63,7 @@ public class PathVisualizer : MonoBehaviour
         {
             Destroy(lineRenderer.gameObject);
         }
+
         _lineRenderers.Clear();
     }
 }

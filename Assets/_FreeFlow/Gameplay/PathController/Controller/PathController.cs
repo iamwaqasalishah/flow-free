@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class PathController : MonoBehaviour
 {
-    private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
-    private Stack<ColorType> _undoStack = new Stack<ColorType>();
-    private List<GridTile> _currentSelection;
+    [ShowInInspector] private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+    [ShowInInspector] private Stack<ColorType> _undoStack = new Stack<ColorType>();
+    [ShowInInspector] private List<GridTile> _currentSelection;
     private ColorType _currentColor;
     private int _totalNumberOfPaths;
 
@@ -67,51 +68,60 @@ public class PathController : MonoBehaviour
 
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
 
+        // ✅ If the tile already belongs to another path, reset that path before adding it
+        ColorType previousPathColor = ColorType.None;
         foreach (var path in _paths)
         {
-            if (path.Key != _currentColor && path.Value.Contains(gridTile))
+            if (path.Value.Contains(gridTile))
             {
-                ResetPath(path.Key);
+                previousPathColor = path.Key;
                 break;
             }
+        }
+
+        if (previousPathColor != ColorType.None)
+        {
+            ResetPath(previousPathColor); 
         }
 
         if (_currentSelection.Contains(gridTile)) return;
         if (gridTile.IsNode && gridTile.Color != _currentColor) return;
 
-        // If it's adjacent, add directly
-        if (IsAdjacent(lastTile, gridTile))
-        {
-            _currentSelection.Add(gridTile);
-            gridTile.Color = _currentColor;
-            _pathVisualizer.AddPoint(_currentColor, gridTile.transform.position);
-        }
-        else
-        {
-            // Only allow if there is a valid best path with an adjacent step
-            List<GridTile> bestPath = FindBestPath(lastTile, gridTile);
-            if (bestPath == null) return;
+        List<GridTile> bestPath = FindBestPath(lastTile, gridTile);
+        if (bestPath == null) return;
 
-            foreach (var tile in bestPath)
-            {
-                _currentSelection.Add(tile);
-                tile.Color = _currentColor;
-                _pathVisualizer.AddPoint(_currentColor, tile.transform.position);
-            }
+        foreach (var tile in bestPath)
+        {
+            if (_currentSelection.Contains(tile)) continue;
+            if (tile.IsNode && tile.Color != _currentColor) continue;
+
+            _currentSelection.Add(tile);
+            tile.Color = _currentColor;
+            _pathVisualizer.AddPoint(_currentColor, tile.transform.position);
         }
+       
     }
 
     private List<GridTile> GetNeighbors(GridTile tile)
     {
         List<GridTile> neighbors = new List<GridTile>();
 
-        int[] dx = { -1, -1, -1, 0, 0, 1, 1, 1 };
-        int[] dy = { -1, 0, 1, -1, 1, -1, 0, 1 };
+        int[] dx = { 0, 0, -1, 1 };  // ✅ Left, Right, Up, Down only
+        int[] dy = { -1, 1, 0, 0 };
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 4; i++) // ✅ Only 4 directions instead of 8
         {
             GridTile neighbor = _gridController.GetTileByIndex(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
-            if (neighbor != null) neighbors.Add(neighbor);
+            if (neighbor != null)
+            {
+                neighbors.Add(neighbor);
+
+                // 🛑 Debug log to check if a diagonal neighbor is appearing
+                if (Mathf.Abs(dx[i]) == 1 && Mathf.Abs(dy[i]) == 1)
+                {
+                    Debug.LogError($"❌ Diagonal neighbor detected: {tile.Coordinate} → {neighbor.Coordinate}");
+                }
+            }
         }
 
         return neighbors;
@@ -119,44 +129,64 @@ public class PathController : MonoBehaviour
 
     private List<GridTile> FindBestPath(GridTile start, GridTile target)
     {
-        Queue<List<GridTile>> queue = new Queue<List<GridTile>>();
+        
+        Queue<GridTile> queue = new Queue<GridTile>();  
+        Dictionary<GridTile, GridTile> cameFrom = new Dictionary<GridTile, GridTile>();
         HashSet<GridTile> visited = new HashSet<GridTile>();
 
-        queue.Enqueue(new List<GridTile> { start });
+        queue.Enqueue(start);
         visited.Add(start);
+        cameFrom[start] = null;  
 
         while (queue.Count > 0)
         {
-            List<GridTile> path = queue.Dequeue();
-            GridTile lastTile = path[path.Count - 1];
+            GridTile current = queue.Dequeue();
 
-            if (lastTile == target) 
+            if (current == target)
             {
-                // Ensure the path only takes an adjacent step before diagonal
-                if (path.Count == 2) return path; 
-                else return null; // Ignore direct diagonal moves
-            }
+                List<GridTile> path = new List<GridTile>();
+                while (current != null)
+                {
+                    path.Add(current);
+                    current = cameFrom[current];
+                }
 
-            foreach (var neighbor in GetNeighbors(lastTile))
+                path.Reverse();  
+                return path;
+            }
+            if(current.IsNode && current.Color != _currentColor) return null;
+            foreach (var neighbor in GetNeighbors(current))
             {
                 if (visited.Contains(neighbor)) continue;
+                
                 if (neighbor.IsNode && neighbor.Color != _currentColor) continue;
-            
-                // Avoid direct diagonal jumps
-                if (!IsAdjacent(lastTile, neighbor)) continue; 
 
-                List<GridTile> newPath = new List<GridTile>(path) { neighbor };
-                queue.Enqueue(newPath);
+                // ✅ Ensure only adjacent moves are allowed
+                if (!IsAdjacent(current, neighbor)) continue;  
+
+                queue.Enqueue(neighbor);
                 visited.Add(neighbor);
+                cameFrom[neighbor] = current;
+                
             }
         }
         return null;
-        
     }
 
     private bool IsAdjacent(GridTile a, GridTile b)
     {
-        return Mathf.Abs(a.Coordinate.x - b.Coordinate.x) + Mathf.Abs(a.Coordinate.y - b.Coordinate.y) == 1;
+        Vector2Int coordA = a.Coordinate;
+        Vector2Int coordB = b.Coordinate;
+
+        int dx = Mathf.Abs(coordA.x - coordB.x);
+        int dy = Mathf.Abs(coordA.y - coordB.y);
+
+        if (dx == 1 && dy == 1)
+        {
+            Debug.LogError($"❌ Diagonal move detected from {coordA} to {coordB}!");
+        }
+
+        return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
     }
 
     private bool IsAdjacentOrDiagonal(GridTile a, GridTile b)
@@ -220,7 +250,7 @@ public class PathController : MonoBehaviour
         }
 
         _paths.Remove(color);
-        
+
         _pathVisualizer.RemoveLineRenderer(color);
     }
 
