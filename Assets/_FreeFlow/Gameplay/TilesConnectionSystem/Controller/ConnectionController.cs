@@ -22,18 +22,18 @@ public class ConnectionController : MonoBehaviour
 
     public void CreateConnection(GridTile fromTile, GridTile toTile)
     {
-        if (fromTile == null || toTile == null) return;
-
-        Connection connection = Instantiate(connectionPrefab, transform);
-        connection.SetConnection(fromTile, toTile);
-        ColorType pathColor = fromTile.Color;
-
-        if (!_connections.ContainsKey(pathColor))
-        {
-            _connections[pathColor] = new List<Connection>();
-        }
-       
-        _connections[pathColor].Add(connection);
+        // if (fromTile == null || toTile == null) return;
+        //
+        // Connection connection = Instantiate(connectionPrefab, transform);
+        // connection.SetConnection(fromTile, toTile);
+        // ColorType pathColor = fromTile.Color;
+        //
+        // if (!_connections.ContainsKey(pathColor))
+        // {
+        //     _connections[pathColor] = new List<Connection>();
+        // }
+        //
+        // _connections[pathColor].Add(connection);
     }
 
     public void ContinuePath(ColorType color, List<GridTile> existingPath)
@@ -52,38 +52,38 @@ public class ConnectionController : MonoBehaviour
     }
     public void ClearAllConnections()
     {
-        foreach (var connection in _connections.Values)
-        {
-            foreach (var line in connection)
-            {
-                Destroy(line.gameObject); // Destroy all line renderers or connection objects
-            }
-        }
-    
-        _connections.Clear(); // Clear the dictionary
+        // foreach (var connection in _connections.Values)
+        // {
+        //     foreach (var line in connection)
+        //     {
+        //         Destroy(line.gameObject); // Destroy all line renderers or connection objects
+        //     }
+        // }
+        //
+        // _connections.Clear(); // Clear the dictionary
     }
     public void RemoveLastConnection(ColorType color)
     {
-        if (_connections.ContainsKey(color) && _connections[color].Count > 0)
-        {
-            int lastIndex = _connections[color].Count - 1;
-            Connection lastConnection = _connections[color][lastIndex];
-
-            _connections[color].RemoveAt(lastIndex);
-            Destroy(lastConnection.gameObject);
-        }
+        // if (_connections.ContainsKey(color) && _connections[color].Count > 0)
+        // {
+        //     int lastIndex = _connections[color].Count - 1;
+        //     Connection lastConnection = _connections[color][lastIndex];
+        //
+        //     _connections[color].RemoveAt(lastIndex);
+        //     Destroy(lastConnection.gameObject);
+        // }
     }
 
     public void ClearConnections(ColorType color)
     {
-        if (_connections.ContainsKey(color))
-        {
-            foreach (var connection in _connections[color])
-            {
-                Destroy(connection.gameObject);
-            }
-            _connections[color].Clear();
-        }
+        // if (_connections.ContainsKey(color))
+        // {
+        //     foreach (var connection in _connections[color])
+        //     {
+        //         Destroy(connection.gameObject);
+        //     }
+        //     _connections[color].Clear();
+        // }
     }
 
 
