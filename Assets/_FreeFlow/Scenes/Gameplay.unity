@@ -1030,6 +1030,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Pathcontroller
       objectReference: {fileID: 0}
+    - target: {fileID: 6463765292173813833, guid: 0baa6cc3914a84f7d9c69e8518067e0c, type: 3}
+      propertyPath: _gridController
+      value: 
+      objectReference: {fileID: 1371039203}
     m_RemovedComponents:
     - {fileID: 4615040249232582155, guid: 0baa6cc3914a84f7d9c69e8518067e0c, type: 3}
     m_RemovedGameObjects: []
