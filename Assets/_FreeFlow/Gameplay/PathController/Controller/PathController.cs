@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PathController : MonoBehaviour
 {
-   private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+    private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
     private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
     private Dictionary<ColorType, PathLineRenderer> _lineRenderers = new Dictionary<ColorType, PathLineRenderer>();
 
@@ -139,7 +139,8 @@ public class PathController : MonoBehaviour
 
     public void ValidatePath()
     {
-        if (_currentSelection != null && _currentSelection.Count > 1 && _currentSelection[_currentSelection.Count - 1].IsNode)
+        if (_currentSelection != null && _currentSelection.Count > 1 &&
+            _currentSelection[_currentSelection.Count - 1].IsNode)
         {
             _paths[_currentColor] = new List<GridTile>(_currentSelection);
             _activeTiles[_currentColor] = new HashSet<GridTile>(_currentActiveTiles);
@@ -151,6 +152,8 @@ public class PathController : MonoBehaviour
         }
         else
         {
+            if (_lineRenderers.ContainsKey(_currentColor))
+                _lineRenderers[_currentColor]?.ClearLine();
             ResetPath(_currentColor);
             _connectionController.ClearConnections(_currentColor);
             _currentSelection = null;
@@ -215,6 +218,7 @@ public class PathController : MonoBehaviour
         {
             Destroy(lineRenderer.gameObject);
         }
+
         _lineRenderers.Clear();
     }
 
