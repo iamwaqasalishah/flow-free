@@ -6,16 +6,12 @@ using UnityEngine;
 public class PathController : MonoBehaviour
 {
     private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
-    private Dictionary<ColorType, HashSet<GridTile>> _activeTiles = new Dictionary<ColorType, HashSet<GridTile>>();
-    
+    private Stack<ColorType> _undoStack = new Stack<ColorType>(); 
     private List<GridTile> _currentSelection;
-    private HashSet<GridTile> _currentActiveTiles;
     private ColorType _currentColor;
     private int _totalNumberOfPaths;
 
     [SerializeField] private PathVisualizer _pathVisualizer;
-    private Stack<ColorType> _undoStack = new Stack<ColorType>(); // Stack for undoing paths
-
     private void OnEnable()
     {
         EventManager.OnSetPathsCount += OnSetPathsCount;
@@ -50,7 +46,6 @@ public class PathController : MonoBehaviour
         }
 
         _currentSelection = new List<GridTile> { gridTile };
-        _currentActiveTiles = new HashSet<GridTile> { gridTile };
 
         gridTile.Color = _currentColor;
 
@@ -74,11 +69,11 @@ public class PathController : MonoBehaviour
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
         if (!IsAdjacent(lastTile, gridTile)) return;
 
-        foreach (var kvp in _activeTiles)
+        foreach (var path in _paths)
         {
-            if (kvp.Key != _currentColor && kvp.Value.Contains(gridTile))
+            if (path.Key != _currentColor && path.Value.Contains(gridTile))
             {
-                ResetPath(kvp.Key);
+                ResetPath(path.Key);
                 break;
             }
         }
@@ -87,7 +82,6 @@ public class PathController : MonoBehaviour
         if (gridTile.IsNode && gridTile.Color != _currentColor) return;
 
         _currentSelection.Add(gridTile);
-        _currentActiveTiles.Add(gridTile);
         gridTile.Color = _currentColor;
         
         _pathVisualizer.AddPoint(_currentColor, gridTile.transform.position);
@@ -103,7 +97,6 @@ public class PathController : MonoBehaviour
         GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
         if (!lastTile.IsNode) lastTile.Color = ColorType.None;
 
-        _currentActiveTiles.Remove(lastTile);
         _currentSelection.RemoveAt(_currentSelection.Count - 1);
 
         _pathVisualizer.RemoveLastPoint(_currentColor);
@@ -115,8 +108,6 @@ public class PathController : MonoBehaviour
             _currentSelection[_currentSelection.Count - 1].IsNode)
         {
             _paths[_currentColor] = new List<GridTile>(_currentSelection);
-            _activeTiles[_currentColor] = new HashSet<GridTile>(_currentActiveTiles);
-
             _undoStack.Push(_currentColor); 
 
             _currentSelection = null;
@@ -154,7 +145,6 @@ public class PathController : MonoBehaviour
         }
 
         _paths.Remove(color);
-        _activeTiles.Remove(color);
         _pathVisualizer.RemoveLineRenderer(color);
     }
 
@@ -169,7 +159,6 @@ public class PathController : MonoBehaviour
         }
 
         _paths.Clear();
-        _activeTiles.Clear();
         _undoStack.Clear();
         _pathVisualizer.ClearAllLines();
     }
