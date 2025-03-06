@@ -11,8 +11,7 @@ public class PathController : MonoBehaviour
     [ShowInInspector] private List<GridTile> _currentSelection;
     private ColorType _currentColor;
     private int _totalNumberOfPaths;
-
-    [SerializeField] GridController _gridController;
+    
     [SerializeField] private PathVisualizer _pathVisualizer;
 
     private void OnEnable()
@@ -20,6 +19,9 @@ public class PathController : MonoBehaviour
         EventManager.OnSetPathsCount += OnSetPathsCount;
         EventManager.OnUndo += UndoLastPath;
         EventManager.OnReset += ResetAllPaths;
+        EventManager.OnHandleTileSelection+= HandleTileSelection;
+        EventManager.OnStartNewPath += StartNewPath;
+        EventManager.OnValidatePath += ValidatePath;
     }
 
     private void OnDisable()
@@ -27,6 +29,9 @@ public class PathController : MonoBehaviour
         EventManager.OnUndo -= UndoLastPath;
         EventManager.OnReset -= ResetAllPaths;
         EventManager.OnSetPathsCount -= OnSetPathsCount;
+        EventManager.OnHandleTileSelection-= HandleTileSelection;
+        EventManager.OnStartNewPath -= StartNewPath;
+        EventManager.OnValidatePath -= ValidatePath;
     }
 
     private void Awake()
@@ -68,7 +73,6 @@ public class PathController : MonoBehaviour
 
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
 
-        // ✅ If the tile already belongs to another path, reset that path before adding it
         ColorType previousPathColor = ColorType.None;
         foreach (var path in _paths)
         {
@@ -94,7 +98,7 @@ public class PathController : MonoBehaviour
         {
             if (_currentSelection.Contains(tile)) continue;
             if (tile.IsNode && tile.Color != _currentColor) continue;
-
+            
             _currentSelection.Add(tile);
             tile.Color = _currentColor;
             _pathVisualizer.AddPoint(_currentColor, tile.transform.position);
@@ -106,21 +110,16 @@ public class PathController : MonoBehaviour
     {
         List<GridTile> neighbors = new List<GridTile>();
 
-        int[] dx = { 0, 0, -1, 1 };  // ✅ Left, Right, Up, Down only
+        int[] dx = { 0, 0, -1, 1 };  
         int[] dy = { -1, 1, 0, 0 };
 
-        for (int i = 0; i < 4; i++) // ✅ Only 4 directions instead of 8
+        for (int i = 0; i < 4; i++) 
         {
-            GridTile neighbor = _gridController.GetTileByIndex(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
+            GridTile neighbor = EventManager.DoFireOnGetTileByIndex(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
             if (neighbor != null)
             {
                 neighbors.Add(neighbor);
-
-                // 🛑 Debug log to check if a diagonal neighbor is appearing
-                if (Mathf.Abs(dx[i]) == 1 && Mathf.Abs(dy[i]) == 1)
-                {
-                    Debug.LogError($"❌ Diagonal neighbor detected: {tile.Coordinate} → {neighbor.Coordinate}");
-                }
+                
             }
         }
 
@@ -161,7 +160,6 @@ public class PathController : MonoBehaviour
                 
                 if (neighbor.IsNode && neighbor.Color != _currentColor) continue;
 
-                // ✅ Ensure only adjacent moves are allowed
                 if (!IsAdjacent(current, neighbor)) continue;  
 
                 queue.Enqueue(neighbor);
@@ -180,11 +178,6 @@ public class PathController : MonoBehaviour
 
         int dx = Mathf.Abs(coordA.x - coordB.x);
         int dy = Mathf.Abs(coordA.y - coordB.y);
-
-        if (dx == 1 && dy == 1)
-        {
-            Debug.LogError($"❌ Diagonal move detected from {coordA} to {coordB}!");
-        }
 
         return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
     }

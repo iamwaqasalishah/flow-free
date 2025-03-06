@@ -16,7 +16,9 @@ public class GridBase : MonoBehaviour
     {
         LoadGridData();
     }
-    
+
+   
+
     private void LoadGridData()
     {
         width = GridSettingConfigs.Default.GridSize; 

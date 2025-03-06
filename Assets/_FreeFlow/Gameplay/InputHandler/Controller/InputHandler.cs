@@ -8,12 +8,12 @@ public class InputHandler : MonoBehaviour
     private bool _isDragging;
     private Vector3 _lastMousePosition;
 
-    private PathController _pathController;
+   // private PathController _pathController;
     private bool _canInteract = true;
     private void Awake()
     {
         _camera = Camera.main;
-        _pathController = FindObjectOfType<PathController>();
+       // _pathController = FindObjectOfType<PathController>();
     }
 
     private void OnEnable()
@@ -47,7 +47,7 @@ public class InputHandler : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             _isDragging = false;
-            _pathController.ValidatePath();
+            EventManager.DoFireOnValidatePath();
         }
     }
 
@@ -63,8 +63,8 @@ public class InputHandler : MonoBehaviour
             {
                 _isDragging = true;
                 _lastMousePosition = Input.mousePosition;
-
-                _pathController.StartNewPath(gridTile);
+    
+                EventManager.DoFireOnStartNewPath(gridTile);
             }
         }
     }
@@ -79,7 +79,8 @@ public class InputHandler : MonoBehaviour
             GridTile gridTile = hitCollider.GetComponent<GridTile>();
             if (gridTile != null)
             {
-                _pathController.HandleTileSelection(gridTile);
+                EventManager.DoFireOnHandleTileSelection(gridTile);
+               
             }
         }
     }
