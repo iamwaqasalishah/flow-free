@@ -1,8 +1,4 @@
-﻿// /*
-// Created by Darsan
-// */
-
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 public class GridTile : MonoBehaviour,IGridTile
@@ -58,12 +54,12 @@ public class GridTile : MonoBehaviour,IGridTile
 
    
 
-    public void SelectTile()
+    public void Highlight()
     {
         _renderer.color = ColorGroupSO.Default.GetColor(_color);
     }
 
-    public void DeselectTile()
+    public void UnHighlight()
     {
         _renderer.color = ColorGroupSO.Default.GetColor(ColorType.None);
     }
