@@ -6,17 +6,24 @@ public class GridController : GridBase
 {
     private void OnEnable()
     {
+        EventManager.OnLoadGame += LoadGridData;
         EventManager.OnGetTileByIndex += GetTileByIndex;
         EventManager.OnInitializeGrid += InitializeGrid;
     }
 
     private void OnDisable()
     {
+        EventManager.OnLoadGame -= LoadGridData;
         EventManager.OnGetTileByIndex -= GetTileByIndex;
         EventManager.OnInitializeGrid -= InitializeGrid;
     }
 
-    public void InitializeGrid(int gridSize, LevelData levelData)
+    protected override void LoadGridData()
+    {
+        base.LoadGridData();
+        EventManager.DoFireOnGameStart();
+    }
+    private void InitializeGrid(int gridSize, LevelData levelData)
     {
         SetUp(gridSize);
         var paths = levelData.Paths;

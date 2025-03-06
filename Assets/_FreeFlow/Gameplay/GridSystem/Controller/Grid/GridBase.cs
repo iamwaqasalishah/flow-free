@@ -10,16 +10,9 @@ public class GridBase : MonoBehaviour
     private float width;
     private float spacing;
 
-    protected Dictionary<Vector2Int, GridTile> _tiles = new Dictionary<Vector2Int, GridTile>();
-
-    private void Awake()
-    {
-        LoadGridData();
-    }
-
-   
-
-    private void LoadGridData()
+    private Dictionary<Vector2Int, GridTile> _tiles = new Dictionary<Vector2Int, GridTile>();
+    
+    protected virtual void LoadGridData()
     {
         width = GridSettingConfigs.Default.GridSize; 
         spacing = GridSettingConfigs.Default.TileSpacing; 
@@ -45,7 +38,6 @@ public class GridBase : MonoBehaviour
                 gridTile.transform.position = lowerLeft +
                     ((row + 0.5f) * tileSize + row * spacing) * Vector3.up +  
                     ((col + 0.5f) * tileSize + col * spacing) * Vector3.right; 
-
                 
                 _tiles[coordinate] = gridTile;
             }

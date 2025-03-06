@@ -6,19 +6,25 @@ using UnityEngine.SceneManagement;
 public class LevelManager : MonoBehaviour
 {
     private int _totalLevels = 5;
+    private int _totalPaths;
+
     private void OnEnable()
     {
+        EventManager.OnStartGame += LoadData;
         EventManager.OnRestartLevel += RestartLevel;
         EventManager.OnNextLevel += LoadNextLevel;
+        EventManager.OnUpdatePathsCount += UpdatePathsCount;
     }
 
     private void OnDisable()
     {
+        EventManager.OnStartGame -= LoadData;
         EventManager.OnRestartLevel -= RestartLevel;
         EventManager.OnNextLevel -= LoadNextLevel;
+        EventManager.OnUpdatePathsCount -= UpdatePathsCount;
     }
 
-    private void Start()
+    private void LoadData()
     {
         var _currentLevel = DB.LevelNumber;
 
@@ -30,13 +36,27 @@ public class LevelManager : MonoBehaviour
     private void LoadLevel(int levelToLoad)
     {
         int levelIndex = ((levelToLoad - 1) % _totalLevels) + 1;
-       
-        LevelData level = LevelDataSO.Default.GetLevel(levelIndex-1);
+
+        LevelData level = LevelDataSO.Default.GetLevel(levelIndex - 1);
         if (level != null)
         {
             EventManager.DoFireOnInitializeGrid(level.GridSize, level);
-            EventManager.DoFireOnSetPathsCount(level.Paths.Count);
+            _totalPaths = level.Paths.Count;
         }
+    }
+
+    private void UpdatePathsCount(int value)
+    {
+        if (value >= _totalPaths)
+        {
+            LevelComplete();
+        }
+    }
+
+    private void LevelComplete()
+    {
+        EventManager.DoFireOnDisableInteraction();
+        EventManager.DoFireOnEnableLevelCompletePanel();
     }
 
     public void LoadNextLevel()

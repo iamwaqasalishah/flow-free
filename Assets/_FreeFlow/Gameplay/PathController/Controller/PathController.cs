@@ -18,7 +18,6 @@ public class PathController : MonoBehaviour
 
     private void OnEnable()
     {
-        EventManager.OnSetPathsCount += OnSetPathsCount;
         EventManager.OnUndo += UndoLastPath;
         EventManager.OnReset += ResetAllPaths;
         EventManager.OnHandleTileSelection += HandleTileSelection;
@@ -30,21 +29,11 @@ public class PathController : MonoBehaviour
     {
         EventManager.OnUndo -= UndoLastPath;
         EventManager.OnReset -= ResetAllPaths;
-        EventManager.OnSetPathsCount -= OnSetPathsCount;
         EventManager.OnHandleTileSelection -= HandleTileSelection;
         EventManager.OnStartNewPath -= StartNewPath;
         EventManager.OnValidatePath -= ValidatePath;
     }
-
-    private void Awake()
-    {
-    }
-
-    private void OnSetPathsCount(int count)
-    {
-        _totalNumberOfPaths = count;
-    }
-
+    
     public void StartNewPath(GridTile gridTile)
     {
         _currentColor = gridTile.Color;
@@ -264,7 +253,7 @@ public class PathController : MonoBehaviour
             _undoStack.Push(_currentColor);
             _currentColor = ColorType.None;
             _currentSelection = null;
-            CheckLevelComplete();
+            EventManager.DoFireOnUpdatePathsCount(_paths.Count);
         }
         else
         {
@@ -273,21 +262,7 @@ public class PathController : MonoBehaviour
             _currentSelection = null;
         }
     }
-
-    private bool IsAllPathsCompleted()
-    {
-        return _paths.Count == _totalNumberOfPaths;
-    }
-
-    private void CheckLevelComplete()
-    {
-        if (IsAllPathsCompleted())
-        {
-            EventManager.DoFireOnDisableInteraction();
-            EventManager.DoFireOnEnableLevelCompletePanel();
-        }
-    }
-
+    
     private void ResetPath(ColorType color)
     {
         if (!_paths.ContainsKey(color)) return;

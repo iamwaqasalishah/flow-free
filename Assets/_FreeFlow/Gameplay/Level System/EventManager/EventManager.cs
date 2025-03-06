@@ -19,6 +19,6 @@ public static partial class EventManager
     public static event Action OnLevelNumberUpdate;
     public static void DoFireOnLevelNumberUpdate() => OnLevelNumberUpdate?.Invoke();
 
-    public static event Action<int> OnSetPathsCount;
-    public static void DoFireOnSetPathsCount(int value) => OnSetPathsCount?.Invoke(value);
+    public static event Action<int> OnUpdatePathsCount;
+    public static void DoFireOnUpdatePathsCount(int value) => OnUpdatePathsCount?.Invoke(value);
 }

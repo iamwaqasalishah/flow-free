@@ -7,13 +7,10 @@ public class InputHandler : MonoBehaviour
     private Camera _camera;
     private bool _isDragging;
     private Vector3 _lastMousePosition;
-
-   // private PathController _pathController;
     private bool _canInteract = true;
     private void Awake()
     {
         _camera = Camera.main;
-       // _pathController = FindObjectOfType<PathController>();
     }
 
     private void OnEnable()
