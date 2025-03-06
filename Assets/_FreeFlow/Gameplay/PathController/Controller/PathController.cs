@@ -73,7 +73,9 @@ public class PathController : MonoBehaviour
 
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
 
+        // 🚨 Check if the selected tile is part of another path, reset it if necessary
         ColorType previousPathColor = ColorType.None;
+        
         foreach (var path in _paths)
         {
             if (path.Value.Contains(gridTile))
@@ -85,7 +87,7 @@ public class PathController : MonoBehaviour
 
         if (previousPathColor != ColorType.None)
         {
-            ResetPath(previousPathColor); 
+            ResetPath(previousPathColor);
         }
 
         if (_currentSelection.Contains(gridTile)) return;
@@ -93,19 +95,37 @@ public class PathController : MonoBehaviour
 
         List<GridTile> bestPath = FindBestPath(lastTile, gridTile);
         if (bestPath == null) return;
-
+        
+        bestPath = IsPathFullyAdjacent(lastTile,bestPath);
         foreach (var tile in bestPath)
         {
             if (_currentSelection.Contains(tile)) continue;
             if (tile.IsNode && tile.Color != _currentColor) continue;
-            
+
             _currentSelection.Add(tile);
             tile.Color = _currentColor;
             _pathVisualizer.AddPoint(_currentColor, tile.transform.position);
         }
        
     }
+    private List<GridTile> IsPathFullyAdjacent(GridTile lastTile, List<GridTile> path)
+    {
+        List<GridTile> filteredPath = new List<GridTile>();
+        GridTile previousTile = lastTile;
 
+        foreach (var tile in path)
+        {
+            // ✅ Ensure tile is adjacent to `lastTile` and previous tile in the path
+            if (IsAdjacent(lastTile, tile) && (filteredPath.Count == 0 || IsAdjacent(previousTile, tile)))
+            {
+                filteredPath.Add(tile);
+                previousTile = tile; // Update previous tile
+            }
+        }
+
+        return filteredPath;
+    }
+    
     private List<GridTile> GetNeighbors(GridTile tile)
     {
         List<GridTile> neighbors = new List<GridTile>();
@@ -128,14 +148,13 @@ public class PathController : MonoBehaviour
 
     private List<GridTile> FindBestPath(GridTile start, GridTile target)
     {
-        
-        Queue<GridTile> queue = new Queue<GridTile>();  
+        Queue<GridTile> queue = new Queue<GridTile>();
         Dictionary<GridTile, GridTile> cameFrom = new Dictionary<GridTile, GridTile>();
         HashSet<GridTile> visited = new HashSet<GridTile>();
 
         queue.Enqueue(start);
         visited.Add(start);
-        cameFrom[start] = null;  
+        cameFrom[start] = null;
 
         while (queue.Count > 0)
         {
@@ -146,31 +165,45 @@ public class PathController : MonoBehaviour
                 List<GridTile> path = new List<GridTile>();
                 while (current != null)
                 {
+                    // ✅ **Remove diagonal tiles before adding to path**
+                    if (path.Count > 0 && IsDiagonal(path[path.Count - 1], current))
+                    {
+                        current = cameFrom[current]; // ❌ Skip diagonal tile
+                        continue;
+                    }
+
                     path.Add(current);
                     current = cameFrom[current];
                 }
 
-                path.Reverse();  
+                path.Reverse();
                 return path;
             }
-            if(current.IsNode && current.Color != _currentColor) return null;
+
             foreach (var neighbor in GetNeighbors(current))
             {
                 if (visited.Contains(neighbor)) continue;
-                
                 if (neighbor.IsNode && neighbor.Color != _currentColor) continue;
 
-                if (!IsAdjacent(current, neighbor)) continue;  
+                // 🚨 **Reject diagonals with current tile**
+                if (IsDiagonal(current, neighbor)) continue;
 
                 queue.Enqueue(neighbor);
                 visited.Add(neighbor);
                 cameFrom[neighbor] = current;
-                
             }
         }
-        return null;
-    }
 
+        return null; // No valid path found
+    }
+    
+    private bool IsDiagonal(GridTile a, GridTile b)
+    {
+        int dx = Mathf.Abs(a.Coordinate.x - b.Coordinate.x);
+        int dy = Mathf.Abs(a.Coordinate.y - b.Coordinate.y);
+
+        return (dx == 1 && dy == 1); // ❌ True if diagonal
+    }
     private bool IsAdjacent(GridTile a, GridTile b)
     {
         Vector2Int coordA = a.Coordinate;
@@ -180,14 +213,6 @@ public class PathController : MonoBehaviour
         int dy = Mathf.Abs(coordA.y - coordB.y);
 
         return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
-    }
-
-    private bool IsAdjacentOrDiagonal(GridTile a, GridTile b)
-    {
-        int dx = Mathf.Abs(a.Coordinate.x - b.Coordinate.x);
-        int dy = Mathf.Abs(a.Coordinate.y - b.Coordinate.y);
-
-        return (dx <= 1 && dy <= 1) && (dx + dy > 0);
     }
 
     private void Backtrack()
