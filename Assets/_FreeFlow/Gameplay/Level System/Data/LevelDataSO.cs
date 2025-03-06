@@ -8,32 +8,19 @@ public class LevelDataSO : ScriptableObject
 {
     public static LevelDataSO Default => Resources.Load<LevelDataSO>(nameof(LevelDataSO));
 
-    [SerializeField] private List<LevelData> _levelsData = new List<LevelData>();
+    [SerializeField] private List<LevelSO> _levels = new List<LevelSO>();
 
     public LevelData GetLevel(int levelIndex)
     {
-        if (levelIndex < 0 || levelIndex >= _levelsData.Count)
+        if (levelIndex < 0 || levelIndex >= _levels.Count)
             return null;
         
-        return _levelsData[levelIndex];
+        return _levels[levelIndex].levelData;
     }
 
     public int GetNumberOfLevels()
     {
-        return _levelsData.Count;
+        return _levels.Count;
     }
 }
 
-[Serializable]
-public class LevelData
-{
-    public int GridSize;
-    public List<PathData> Paths;
-}
-
-[Serializable]
-public class PathData
-{
-    public List<Vector2Int> Points;
-    public ColorType Color;
-}

@@ -39,7 +39,7 @@ public class ColorData
     public Color Color;
 }
 
-public enum ColorType
+public enum ColorType:byte
 {
     None,
     Red,
