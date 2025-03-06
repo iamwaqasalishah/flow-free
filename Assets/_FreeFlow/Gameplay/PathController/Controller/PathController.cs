@@ -257,7 +257,7 @@ public class PathController : MonoBehaviour
         }
         else
         {
-            _pathVisualizer.ClearLine(_currentColor);
+            _pathVisualizer.RemoveLineRenderer(_currentColor);
             ResetPath(_currentColor);
             _currentSelection = null;
         }

@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class PathLineRenderer : MonoBehaviour
 {
-    private LineRenderer _lineRenderer;
+    [SerializeField] private LineRenderer _lineRenderer;
     private List<Vector3> _linePositions = new List<Vector3>();
 
-    private void Awake()
-    {
-        _lineRenderer = gameObject.AddComponent<LineRenderer>();
-
-        _lineRenderer.startWidth = 0.2f;
-        _lineRenderer.endWidth = 0.2f;
-        _lineRenderer.numCornerVertices = 100;
-        _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-    }
+    // private void Awake()
+    // {
+    //     _lineRenderer = gameObject.AddComponent<LineRenderer>();
+    //
+    //     _lineRenderer.startWidth = 0.2f;
+    //     _lineRenderer.endWidth = 0.2f;
+    //     _lineRenderer.numCornerVertices = 100;
+    //     _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+    // }
 
     public void SetColor(ColorType col)
     {

@@ -2,25 +2,29 @@ using System.Collections;
 using System.Collections.Generic;
 using RDG;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PathVisualizer : MonoBehaviour
 {
+    [SerializeField] private PathLineRenderer _lineRendererPrefab; 
     private Dictionary<ColorType, PathLineRenderer> _lineRenderers = new Dictionary<ColorType, PathLineRenderer>();
+    private Queue<PathLineRenderer> _lineRendererPool = new Queue<PathLineRenderer>();
+  
 
     public void CreateLineRenderer(ColorType color, Vector3 startPosition)
     {
         if (_lineRenderers.ContainsKey(color))
         {
-            Destroy(_lineRenderers[color].gameObject);
-            _lineRenderers.Remove(color);
+            RemoveLineRenderer(color);
         }
 
-        GameObject lineObj = new GameObject("PathLine_" + color);
-        PathLineRenderer lineRenderer = lineObj.AddComponent<PathLineRenderer>();
+        PathLineRenderer lineRenderer = GetPooledLineRenderer();
         lineRenderer.SetColor(color);
         lineRenderer.AddPoint(startPosition);
-        Vibration.Vibrate(10);
+        lineRenderer.gameObject.SetActive(true);
         _lineRenderers[color] = lineRenderer;
+
+        Vibration.Vibrate(10);
     }
 
     public void AddPoint(ColorType color, Vector3 position)
@@ -40,19 +44,13 @@ public class PathVisualizer : MonoBehaviour
         }
     }
 
-    public void ClearLine(ColorType color)
-    {
-        if (_lineRenderers.ContainsKey(color))
-        {
-            _lineRenderers[color].ClearLine();
-        }
-    }
-
     public void RemoveLineRenderer(ColorType color)
     {
         if (_lineRenderers.ContainsKey(color))
         {
-            Destroy(_lineRenderers[color].gameObject);
+            PathLineRenderer lineRenderer = _lineRenderers[color];
+            lineRenderer.gameObject.SetActive(false);
+            _lineRendererPool.Enqueue(lineRenderer); 
             _lineRenderers.Remove(color);
         }
     }
@@ -61,9 +59,23 @@ public class PathVisualizer : MonoBehaviour
     {
         foreach (var lineRenderer in _lineRenderers.Values)
         {
-            Destroy(lineRenderer.gameObject);
+            lineRenderer.gameObject.SetActive(false);
+            _lineRendererPool.Enqueue(lineRenderer);
         }
 
         _lineRenderers.Clear();
+    }
+
+    private PathLineRenderer GetPooledLineRenderer()
+    {
+        if (_lineRendererPool.Count > 0)
+        {
+            return _lineRendererPool.Dequeue();
+        }
+        else
+        {
+            PathLineRenderer lineObj = Instantiate(_lineRendererPrefab);
+            return lineObj;
+        }
     }
 }
