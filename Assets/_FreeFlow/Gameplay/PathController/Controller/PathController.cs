@@ -6,12 +6,14 @@ using UnityEngine;
 
 public class PathController : MonoBehaviour
 {
-    [ShowInInspector] private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+    [ShowInInspector]
+    private Dictionary<ColorType, List<GridTile>> _paths = new Dictionary<ColorType, List<GridTile>>();
+
     [ShowInInspector] private Stack<ColorType> _undoStack = new Stack<ColorType>();
     [ShowInInspector] private List<GridTile> _currentSelection;
     private ColorType _currentColor;
     private int _totalNumberOfPaths;
-    
+
     [SerializeField] private PathVisualizer _pathVisualizer;
 
     private void OnEnable()
@@ -19,7 +21,7 @@ public class PathController : MonoBehaviour
         EventManager.OnSetPathsCount += OnSetPathsCount;
         EventManager.OnUndo += UndoLastPath;
         EventManager.OnReset += ResetAllPaths;
-        EventManager.OnHandleTileSelection+= HandleTileSelection;
+        EventManager.OnHandleTileSelection += HandleTileSelection;
         EventManager.OnStartNewPath += StartNewPath;
         EventManager.OnValidatePath += ValidatePath;
     }
@@ -29,7 +31,7 @@ public class PathController : MonoBehaviour
         EventManager.OnUndo -= UndoLastPath;
         EventManager.OnReset -= ResetAllPaths;
         EventManager.OnSetPathsCount -= OnSetPathsCount;
-        EventManager.OnHandleTileSelection-= HandleTileSelection;
+        EventManager.OnHandleTileSelection -= HandleTileSelection;
         EventManager.OnStartNewPath -= StartNewPath;
         EventManager.OnValidatePath -= ValidatePath;
     }
@@ -49,6 +51,7 @@ public class PathController : MonoBehaviour
 
         if (_paths.ContainsKey(_currentColor))
         {
+            Debug.Log("starting new path");
             ResetPath(_currentColor);
         }
 
@@ -65,6 +68,15 @@ public class PathController : MonoBehaviour
 
         GridTile lastTile = _currentSelection[_currentSelection.Count - 1];
 
+        // 🚨 **Check if the selected tile is already in `_currentSelection`**
+        int existingIndex = _currentSelection.IndexOf(gridTile);
+        if (existingIndex != -1)
+        {
+            // ✅ **Trim the path to only keep tiles up to the selected tile**
+            TrimPath(existingIndex);
+            return;
+        }
+
         if (_currentSelection.Count > 1 && _currentSelection[_currentSelection.Count - 2] == gridTile)
         {
             Backtrack();
@@ -73,30 +85,35 @@ public class PathController : MonoBehaviour
 
         if (lastTile.IsNode && _currentSelection.Count > 1) return;
 
-        // 🚨 Check if the selected tile is part of another path, reset it if necessary
+        // 🚨 **Check if the selected tile is part of another path**
         ColorType previousPathColor = ColorType.None;
-        
+        bool isIntersectingPath = false;
+
         foreach (var path in _paths)
         {
             if (path.Value.Contains(gridTile))
             {
                 previousPathColor = path.Key;
+                isIntersectingPath = true;
                 break;
             }
         }
 
-        if (previousPathColor != ColorType.None)
+        if (gridTile.IsNode && gridTile.Color != _currentColor) return;
+
+        // ✅ **Step 1: Find a valid path before resetting anything**
+        List<GridTile> bestPath = FindBestPath(lastTile, gridTile);
+        if (bestPath == null) return; // ❌ No valid path → Do NOT reset anything
+
+        bestPath = IsPathFullyAdjacent(lastTile, bestPath);
+
+        // ✅ **Step 2: Remove previous path ONLY if a valid path exists**
+        if (isIntersectingPath && previousPathColor != ColorType.None)
         {
+            Debug.Log("✅ Resetting previous path color because a valid path exists.");
             ResetPath(previousPathColor);
         }
 
-        if (_currentSelection.Contains(gridTile)) return;
-        if (gridTile.IsNode && gridTile.Color != _currentColor) return;
-
-        List<GridTile> bestPath = FindBestPath(lastTile, gridTile);
-        if (bestPath == null) return;
-        
-        bestPath = IsPathFullyAdjacent(lastTile,bestPath);
         foreach (var tile in bestPath)
         {
             if (_currentSelection.Contains(tile)) continue;
@@ -106,8 +123,20 @@ public class PathController : MonoBehaviour
             tile.Color = _currentColor;
             _pathVisualizer.AddPoint(_currentColor, tile.transform.position);
         }
-       
     }
+
+    private void TrimPath(int index)
+    {
+        // ✅ **Remove all tiles after the selected tile**
+        for (int i = _currentSelection.Count - 1; i > index; i--)
+        {
+            GridTile tile = _currentSelection[i];
+            if (!tile.IsNode) tile.Color = ColorType.None;
+            _pathVisualizer.RemoveLastPoint(_currentColor);
+            _currentSelection.RemoveAt(i);
+        }
+    }
+
     private List<GridTile> IsPathFullyAdjacent(GridTile lastTile, List<GridTile> path)
     {
         List<GridTile> filteredPath = new List<GridTile>();
@@ -125,21 +154,21 @@ public class PathController : MonoBehaviour
 
         return filteredPath;
     }
-    
+
     private List<GridTile> GetNeighbors(GridTile tile)
     {
         List<GridTile> neighbors = new List<GridTile>();
 
-        int[] dx = { 0, 0, -1, 1 };  
+        int[] dx = { 0, 0, -1, 1 };
         int[] dy = { -1, 1, 0, 0 };
 
-        for (int i = 0; i < 4; i++) 
+        for (int i = 0; i < 4; i++)
         {
-            GridTile neighbor = EventManager.DoFireOnGetTileByIndex(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
+            GridTile neighbor =
+                EventManager.DoFireOnGetTileByIndex(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
             if (neighbor != null)
             {
                 neighbors.Add(neighbor);
-                
             }
         }
 
@@ -196,7 +225,7 @@ public class PathController : MonoBehaviour
 
         return null; // No valid path found
     }
-    
+
     private bool IsDiagonal(GridTile a, GridTile b)
     {
         int dx = Mathf.Abs(a.Coordinate.x - b.Coordinate.x);
@@ -204,6 +233,7 @@ public class PathController : MonoBehaviour
 
         return (dx == 1 && dy == 1); // ❌ True if diagonal
     }
+
     private bool IsAdjacent(GridTile a, GridTile b)
     {
         Vector2Int coordA = a.Coordinate;
@@ -293,6 +323,7 @@ public class PathController : MonoBehaviour
         if (_undoStack.Count == 0) return;
 
         ColorType lastColor = _undoStack.Pop();
+        Debug.Log("undo last path");
         ResetPath(lastColor);
     }
 }
