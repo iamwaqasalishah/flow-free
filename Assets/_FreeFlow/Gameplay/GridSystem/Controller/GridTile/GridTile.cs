@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GridTile : MonoBehaviour,IGridTile
@@ -6,7 +7,7 @@ public class GridTile : MonoBehaviour,IGridTile
     [SerializeField] private SpriteRenderer _pathEnd;
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private Collider2D _inputCollider;
-    
+    public List<IGridTile> Neighbors { get; set; } = new List<IGridTile>();
     
     private float _size;
     private bool _isNode;
@@ -39,7 +40,10 @@ public class GridTile : MonoBehaviour,IGridTile
             _isNode = value;
         }
     }
-
+    public void SetNeighbors(List<IGridTile> neighbors)
+    {
+        Neighbors = neighbors;
+    }
     public Vector2Int Coordinate { get; set; }
 
     public void EnableCollider()

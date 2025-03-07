@@ -49,6 +49,7 @@ public class PathVisualizer : MonoBehaviour
         if (_lineRenderers.ContainsKey(color))
         {
             PathLineRenderer lineRenderer = _lineRenderers[color];
+            lineRenderer.ClearLine();
             lineRenderer.gameObject.SetActive(false);
             _lineRendererPool.Enqueue(lineRenderer); 
             _lineRenderers.Remove(color);
@@ -59,6 +60,7 @@ public class PathVisualizer : MonoBehaviour
     {
         foreach (var lineRenderer in _lineRenderers.Values)
         {
+            lineRenderer.ClearLine();
             lineRenderer.gameObject.SetActive(false);
             _lineRendererPool.Enqueue(lineRenderer);
         }

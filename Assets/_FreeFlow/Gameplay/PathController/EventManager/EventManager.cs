@@ -14,10 +14,10 @@ public static partial class EventManager
     public static event Action OnValidatePath;
     public static void DoFireOnValidatePath() => OnValidatePath?.Invoke(); 
     
-    public static event Action<GridTile> OnStartNewPath;
-    public static void DoFireOnStartNewPath(GridTile gridTile) => OnStartNewPath?.Invoke(gridTile); 
+    public static event Action<IGridTile> OnStartNewPath;
+    public static void DoFireOnStartNewPath(IGridTile gridTile) => OnStartNewPath?.Invoke(gridTile); 
     
-    public static event Action<GridTile> OnHandleTileSelection;
-    public static void DoFireOnHandleTileSelection(GridTile gridTile) => OnHandleTileSelection?.Invoke(gridTile);
+    public static event Action<IGridTile> OnHandleTileSelection;
+    public static void DoFireOnHandleTileSelection(IGridTile gridTile) => OnHandleTileSelection?.Invoke(gridTile);
     
 }

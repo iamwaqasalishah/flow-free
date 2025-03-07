@@ -15,6 +15,12 @@ public class PathLineRenderer : MonoBehaviour
         _lineRenderer.endColor = color;
     }
 
+    public void ClearLine()
+    {
+        _lineRenderer.positionCount = 0;
+        _linePositions.Clear();
+    }
+
     public void AddPoint(Vector3 position)
     {
         _linePositions.Add(position);

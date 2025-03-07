@@ -8,6 +8,7 @@ public class InputHandler : MonoBehaviour
     private bool _isDragging;
     private Vector3 _lastMousePosition;
     private bool _canInteract = true;
+
     private void Awake()
     {
         _camera = Camera.main;
@@ -50,37 +51,37 @@ public class InputHandler : MonoBehaviour
 
     private void TrySelectNode()
     {
-        Vector3 worldPoint = _camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, _camera.nearClipPlane));
-        Collider2D hitCollider = Physics2D.OverlapPoint(worldPoint);
-
-        if (hitCollider != null)
+        IGridTile gridTile = GetTileUnderMouse();
+        if (gridTile != null && gridTile.IsNode)
         {
-            GridTile gridTile = hitCollider.GetComponent<GridTile>();
-            if (gridTile != null && gridTile.IsNode)
-            {
-                _isDragging = true;
-                _lastMousePosition = Input.mousePosition;
+            _isDragging = true;
+            _lastMousePosition = Input.mousePosition;
     
-                EventManager.DoFireOnStartNewPath(gridTile);
-            }
+            EventManager.DoFireOnStartNewPath(gridTile);
         }
     }
 
     private void TrySelectTile()
+    {
+        IGridTile gridTile = GetTileUnderMouse();
+        if (gridTile != null)
+        {
+            EventManager.DoFireOnHandleTileSelection(gridTile);
+        }
+    }
+
+    private IGridTile GetTileUnderMouse()
     {
         Vector3 worldPoint = _camera.ScreenToWorldPoint(Input.mousePosition);
         Collider2D hitCollider = Physics2D.OverlapPoint(worldPoint);
 
         if (hitCollider != null)
         {
-            GridTile gridTile = hitCollider.GetComponent<GridTile>();
-            if (gridTile != null)
-            {
-                EventManager.DoFireOnHandleTileSelection(gridTile);
-               
-            }
+            return hitCollider.GetComponent<IGridTile>(); // ✅ Now using the interface
         }
+        return null;
     }
+
     public void DisableInteraction()
     {
         _canInteract = false;

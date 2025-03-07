@@ -7,14 +7,12 @@ public class GridController : GridBase
     private void OnEnable()
     {
         EventManager.OnLoadGame += LoadGridData;
-        EventManager.OnGetTileByIndex += GetTileByIndex;
         EventManager.OnInitializeGrid += InitializeGrid;
     }
 
     private void OnDisable()
     {
         EventManager.OnLoadGame -= LoadGridData;
-        EventManager.OnGetTileByIndex -= GetTileByIndex;
         EventManager.OnInitializeGrid -= InitializeGrid;
     }
 

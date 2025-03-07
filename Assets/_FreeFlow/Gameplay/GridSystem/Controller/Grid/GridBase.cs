@@ -42,8 +42,30 @@ public class GridBase : MonoBehaviour
                 _tiles[coordinate] = gridTile;
             }
         }
+        AssignNeighbors();
     }
+    private void AssignNeighbors()
+    {
+        int[] dx = { 0, 0, -1, 1 }; 
+        int[] dy = { -1, 1, 0, 0 }; 
 
+        foreach (var tile in _tiles.Values)
+        {
+            List<IGridTile> neighbors = new List<IGridTile>();
+
+            for (int i = 0; i < 4; i++) 
+            {
+                Vector2Int neighborCoord = new Vector2Int(tile.Coordinate.x + dx[i], tile.Coordinate.y + dy[i]);
+
+                if (_tiles.TryGetValue(neighborCoord, out GridTile neighbor))
+                {
+                    neighbors.Add(neighbor);
+                }
+            }
+
+            tile.SetNeighbors(neighbors); 
+        }
+    }
     public GridTile GetTileByIndex(int x, int y)
     {
         _tiles.TryGetValue(new Vector2Int(x, y), out GridTile tile);
