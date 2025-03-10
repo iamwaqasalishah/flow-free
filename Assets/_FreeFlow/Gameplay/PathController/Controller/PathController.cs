@@ -7,12 +7,15 @@ using UnityEngine;
 
 public class PathController : MonoBehaviour
 {
-  
     private Dictionary<ColorType, List<IGridTile>> _paths = new Dictionary<ColorType, List<IGridTile>>();
     private List<IGridTile> _currentSelection;
     private ColorType _currentColor;
-    private bool IsDiagonal(IGridTile a, IGridTile b) => Mathf.Abs(a.Coordinate.x - b.Coordinate.x) == 1 && Mathf.Abs(a.Coordinate.y - b.Coordinate.y) == 1;
-    private bool IsAdjacent(IGridTile a, IGridTile b) => Mathf.Abs(a.Coordinate.x - b.Coordinate.x) + Mathf.Abs(a.Coordinate.y - b.Coordinate.y) == 1;
+
+    private bool IsDiagonal(IGridTile a, IGridTile b) => Mathf.Abs(a.Coordinate.x - b.Coordinate.x) == 1 &&
+                                                         Mathf.Abs(a.Coordinate.y - b.Coordinate.y) == 1;
+
+    private bool IsAdjacent(IGridTile a, IGridTile b) =>
+        Mathf.Abs(a.Coordinate.x - b.Coordinate.x) + Mathf.Abs(a.Coordinate.y - b.Coordinate.y) == 1;
 
     [SerializeField] private PathVisualizer _pathVisualizer;
 
@@ -20,12 +23,11 @@ public class PathController : MonoBehaviour
     {
         SubscribeToEvents();
     }
-    
+
     private void OnDisable()
     {
         UnsubscribeFromEvents();
-        
-    } 
+    }
 
     private void SubscribeToEvents()
     {
@@ -45,7 +47,7 @@ public class PathController : MonoBehaviour
         EventManager.OnValidatePath -= ValidatePath;
     }
 
-    public void StartNewPath(IGridTile gridTile)
+    private void StartNewPath(IGridTile gridTile)
     {
         _currentColor = gridTile.Color;
         ResetExistingPath(_currentColor);
@@ -91,6 +93,7 @@ public class PathController : MonoBehaviour
             TrimPath(existingIndex);
             return true;
         }
+
         return false;
     }
 
@@ -100,7 +103,6 @@ public class PathController : MonoBehaviour
         if (bestPath == null) return;
         AppendPath(bestPath);
         ResetIntersectingPaths(currentTile);
-       
     }
 
     private List<IGridTile> GetValidPath(IGridTile start, IGridTile target)
@@ -111,29 +113,29 @@ public class PathController : MonoBehaviour
 
     private void ResetIntersectingPaths(IGridTile gridTile)
     {
-        if (gridTile.IsNode) return; 
+        if (gridTile.IsNode) return;
 
         List<ColorType> pathsToReset = new List<ColorType>();
 
         foreach (var path in _paths)
         {
-            if (path.Key == _currentColor) continue; 
+            if (path.Key == _currentColor) continue;
 
-            HashSet<IGridTile> pathTiles = new HashSet<IGridTile>(path.Value); 
+            HashSet<IGridTile> pathTiles = new HashSet<IGridTile>(path.Value);
 
             bool intersectsWithCurrentSelection = false;
 
             foreach (var tile in _currentSelection)
             {
-                if (pathTiles.Contains(tile)) 
+                if (pathTiles.Contains(tile))
                 {
                     intersectsWithCurrentSelection = true;
                 }
-                
-                if (intersectsWithCurrentSelection )
+
+                if (intersectsWithCurrentSelection)
                 {
                     pathsToReset.Add(path.Key);
-                    break; 
+                    break;
                 }
             }
         }
@@ -193,10 +195,15 @@ public class PathController : MonoBehaviour
     {
         if (_currentSelection != null && _currentSelection.Count > 1 && _currentSelection[^1].IsNode)
         {
+            foreach (var  tile in _currentSelection)
+            {
+                tile.Highlight();
+            }
             _paths[_currentColor] = new List<IGridTile>(_currentSelection);
             _currentColor = ColorType.None;
             _currentSelection = null;
             EventManager.DoFireOnUpdatePathsCount(_paths.Count);
+            
         }
         else
         {
@@ -261,7 +268,7 @@ public class PathController : MonoBehaviour
 
     private void UndoLastPath()
     {
-        if (_paths.Count == 0) return;  
+        if (_paths.Count == 0) return;
         ColorType lastColor = _paths.Keys.Last();
         ResetPath(lastColor);
     }
@@ -272,6 +279,7 @@ public class PathController : MonoBehaviour
 
         foreach (var tile in _paths[color])
         {
+            tile.UnHighlight();
             if (!tile.IsNode) tile.Color = ColorType.None;
         }
 
@@ -285,6 +293,7 @@ public class PathController : MonoBehaviour
         {
             foreach (var tile in _paths[color])
             {
+                tile.UnHighlight();
                 if (!tile.IsNode) tile.Color = ColorType.None;
             }
         }
@@ -292,6 +301,4 @@ public class PathController : MonoBehaviour
         _paths.Clear();
         _pathVisualizer.ClearAllLines();
     }
-
-    
 }

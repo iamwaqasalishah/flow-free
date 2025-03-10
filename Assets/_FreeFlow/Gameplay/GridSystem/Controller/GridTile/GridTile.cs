@@ -2,17 +2,17 @@
 using System.Linq;
 using UnityEngine;
 
-public class GridTile : MonoBehaviour,IGridTile
+public class GridTile : MonoBehaviour, IGridTile
 {
     [SerializeField] private SpriteRenderer _pathEnd;
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private Collider2D _inputCollider;
     public List<IGridTile> Neighbors { get; set; } = new List<IGridTile>();
-    
+
     private float _size;
     private bool _isNode;
     private ColorType _color;
-    
+
     public float Size
     {
         get => _size;
@@ -22,6 +22,7 @@ public class GridTile : MonoBehaviour,IGridTile
             transform.localScale = Vector3.one * value;
         }
     }
+
     public ColorType Color
     {
         get => _color;
@@ -31,6 +32,7 @@ public class GridTile : MonoBehaviour,IGridTile
             _color = value;
         }
     }
+
     public bool IsNode
     {
         get => _isNode;
@@ -40,10 +42,12 @@ public class GridTile : MonoBehaviour,IGridTile
             _isNode = value;
         }
     }
+
     public void SetNeighbors(List<IGridTile> neighbors)
     {
         Neighbors = neighbors;
     }
+
     public Vector2Int Coordinate { get; set; }
 
     public void EnableCollider()
@@ -56,16 +60,17 @@ public class GridTile : MonoBehaviour,IGridTile
         _inputCollider.enabled = false;
     }
 
-   
 
     public void Highlight()
     {
-        _renderer.color = ColorGroupSO.Default.GetColor(_color);
+        var color = ColorGroupSO.Default.GetColor(_color);
+        color.a = 0.3f;
+        _renderer.color = color;
+        _renderer.gameObject.SetActive(true);
     }
 
     public void UnHighlight()
     {
-        _renderer.color = ColorGroupSO.Default.GetColor(ColorType.None);
+        _renderer.gameObject.SetActive(false);
     }
 }
-

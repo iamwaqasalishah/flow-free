@@ -6,23 +6,23 @@ using UnityEngine;
 public class GridBase : MonoBehaviour
 {
     [Header("Grid Settings")]
-    private GridTile gridTilePrefab;
-    private float width;
-    private float spacing;
+    private GridTile _gridTilePrefab;
+    private float _width;
+    private float _spacing;
 
     private Dictionary<Vector2Int, GridTile> _tiles = new Dictionary<Vector2Int, GridTile>();
     
     protected virtual void LoadGridData()
     {
-        width = GridSettingConfigs.Default.GridSize; 
-        spacing = GridSettingConfigs.Default.TileSpacing; 
-        gridTilePrefab = GridSettingConfigs.Default.GridTilePrefab; 
+        _width = GridSettingConfigs.Default.GridSize; 
+        _spacing = GridSettingConfigs.Default.TileSpacing; 
+        _gridTilePrefab = GridSettingConfigs.Default.GridTilePrefab; 
     }
 
     protected void SetUp(int count)
     {
-        float tileSize = (width - (count - 1) * spacing) / count; 
-        Vector3 lowerLeft = transform.position - new Vector3(1, 1, 0) * width / 2; 
+        float tileSize = (_width - (count - 1) * _spacing) / count; 
+        Vector3 lowerLeft = transform.position - new Vector3(1, 1, 0) * _width / 2; 
 
         for (int row = 0; row < count; row++)
         {
@@ -30,14 +30,14 @@ public class GridBase : MonoBehaviour
             {
                 Vector2Int coordinate = new Vector2Int(col, row); 
 
-                GridTile gridTile = Instantiate(gridTilePrefab, transform);
+                GridTile gridTile = Instantiate(_gridTilePrefab, transform);
                 gridTile.Coordinate = coordinate;
                 gridTile.Size = tileSize;
                 gridTile.name = $"Tile_{col}_{row}"; 
 
                 gridTile.transform.position = lowerLeft +
-                    ((row + 0.5f) * tileSize + row * spacing) * Vector3.up +  
-                    ((col + 0.5f) * tileSize + col * spacing) * Vector3.right; 
+                    ((row + 0.5f) * tileSize + row * _spacing) * Vector3.up +  
+                    ((col + 0.5f) * tileSize + col * _spacing) * Vector3.right; 
                 
                 _tiles[coordinate] = gridTile;
             }

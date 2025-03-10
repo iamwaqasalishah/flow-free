@@ -28,7 +28,6 @@ public class LevelManager : MonoBehaviour
     {
         var _currentLevel = DB.LevelNumber;
 
-        if (LevelDataSO.Default == null) return;
         _totalLevels = LevelDataSO.Default.GetNumberOfLevels();
         LoadLevel(_currentLevel);
     }
